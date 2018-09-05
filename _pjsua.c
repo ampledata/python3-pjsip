@@ -2690,8 +2690,8 @@ static pj_status_t py_acb_get_frame(void *user_data, void *buffer, pj_size_t buf
     py_ret = PyObject_CallMethod(py_obj, "cb_get_frame", "(I)", (unsigned) buf_size);
     PyGILState_Release(state);
 
-    if (py_ret && PyBytes_Check(py_ret) && (PyString_Size(py_ret) >= 0)) {
-        pj_size_t returned = PyString_Size(py_ret);
+    if (py_ret && PyBytes_Check(py_ret) && (PyBytes_Size(py_ret) >= 0)) {
+        pj_size_t returned = PyBytes_Size(py_ret);
         /* Truncate returned string if too big */
         pj_size_t to_copy = returned > buf_size ? buf_size : returned;
         memcpy(buffer, PyBytes_AsString(py_ret), to_copy);
@@ -2721,7 +2721,7 @@ static pj_status_t py_acb_put_frame(void *user_data, const void *buffer, pj_size
     py_ret = PyObject_CallMethod(py_obj, "cb_put_frame", "(s#)", buffer, (int) buf_size);
     PyGILState_Release(state);
 
-    ret = py_ret && PyInt_Check(py_ret) ? (pj_status_t) PyInt_AsLong(py_ret) : PJ_EINVALIDOP;
+    ret = py_ret && PyLong_Check(py_ret) ? (pj_status_t) PyLong_AsLong(py_ret) : PJ_EINVALIDOP;
     Py_XDECREF(py_ret);
     return ret;
 }
