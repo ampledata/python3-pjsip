@@ -2711,18 +2711,17 @@ class Lib:
         self._err_check("recorder_destroy()", self, err)
 
     def create_audio_cb(self, callback):
-        """Create audio callback.
+        """Creates an Audio Callback.
 
-        Keyword arguments
-        callback    -- An object with one or both of methods:
-                       string cb_get_frame(int) should return a string
-                           containing audio data of specified length
-                       int cb_get_frame(string) should process the string
-                           containing audio data. Return code does not matter.
+        Keyword Arguments:
+            callback -- An Object with one or both of Methods:
+                1) string cb_get_frame(int) - Returns a string containing
+                    audio data of specified length.
+                2) int cb_get_frame(string) - Processes a string containing
+                    audio data. Return code does not matter.
 
         Return:
             Audio callback ID
-
         """
         lck = self.auto_lock()
         err, acb_id = _pjsua.audio_cb_create(callback)
@@ -2730,28 +2729,26 @@ class Lib:
         return acb_id
 
     def audio_cb_get_slot(self, acb_id):
-        """Get the conference port ID for the specified audio callback.
+        """Gets the Conference Port ID for the specified Audio Callback.
 
-        Keyword arguments:
-        acb_id  -- the audio callback ID
+        Keyword Arguments:
+            acb_id -- The Audio Callback ID.
 
         Return:
-            Conference slot number for the audio callback
-
+            Conference Port Number for the Audio Callback.
         """
         lck = self.auto_lock()
         slot = _pjsua.audio_cb_get_conf_port(acb_id)
         if slot < 1:
-            self._err_check("audio_cb_get_slot()", self, -1,
-                            "Invalid audio callback id")
+            self._err_check(
+                "audio_cb_get_slot()", self, -1, "Invalid Audio Callback id")
         return slot
 
     def audio_cb_destroy(self, acb_id):
-        """Destroy the audio callback.
+        """Destroys the Audio Callback.
 
-        Keyword arguments:
-        acb_id   -- the audio callback ID.
-
+        Keyword Arguments:
+            acb_id -- The Audio Callback ID.
         """
         lck = self.auto_lock()
         err = _pjsua.audio_cb_destroy(acb_id)

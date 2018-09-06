@@ -2683,24 +2683,31 @@ static pj_status_t py_acb_get_frame(void *user_data, void *buffer, pj_size_t buf
 {
     PyObject *py_ret, *py_obj;
     PyGILState_STATE state;
-
     py_obj = (PyObject*) user_data;
+
     /* We are in PJMEDIA thread, so we have to lock the Python interpreter */
     state = PyGILState_Ensure();
-    py_ret = PyObject_CallMethod(py_obj, "cb_get_frame", "(I)", (unsigned) buf_size);
+
+    py_ret = PyObject_CallMethod(
+        py_obj, "cb_get_frame", "(I)", (unsigned) buf_size);
+
     PyGILState_Release(state);
 
     if (py_ret && PyBytes_Check(py_ret) && (PyBytes_Size(py_ret) >= 0)) {
         pj_size_t returned = PyBytes_Size(py_ret);
+
         /* Truncate returned string if too big */
         pj_size_t to_copy = returned > buf_size ? buf_size : returned;
         memcpy(buffer, PyBytes_AsString(py_ret), to_copy);
+
         /* Pad returned string with zeros if too small */
         if (to_copy < buf_size)
             pj_bzero((char*) buffer + to_copy, buf_size - to_copy);
+
         Py_DECREF(py_ret);
         return PJ_SUCCESS;
     }
+
     Py_XDECREF(py_ret);
     return PJ_EINVALIDOP;
 }
@@ -2714,15 +2721,23 @@ static pj_status_t py_acb_put_frame(void *user_data, const void *buffer, pj_size
     PyObject *py_ret, *py_obj;
     pj_status_t ret;
     PyGILState_STATE state;
-
     py_obj = (PyObject*) user_data;
+
     /* We are in PJMEDIA thread, so we have to lock the Python interpreter */
     state = PyGILState_Ensure();
-    py_ret = PyObject_CallMethod(py_obj, "cb_put_frame", "(s#)", buffer, (int) buf_size);
+
+    /*
+    Call AudioCallback.cb_put_frame(buffer) casting 'buffer' to Python bytes.
+      Was str (s#) for PY2, converted to bytes (y#) for PY3.
+    */
+    py_ret = PyObject_CallMethod(
+        py_obj, "cb_put_frame", "(y#)", buffer, (int) buf_size);
+
     PyGILState_Release(state);
 
     ret = py_ret && PyLong_Check(py_ret) ? (pj_status_t) PyLong_AsLong(py_ret) : PJ_EINVALIDOP;
     Py_XDECREF(py_ret);
+
     return ret;
 }
 
@@ -2742,9 +2757,11 @@ static PyObject *py_pjsua_audio_cb_create(PyObject *pSelf, PyObject *pArgs)
 
     if (!PyArg_ParseTuple(pArgs, "O", &user_data))
         return NULL;
+
     py_get = PyObject_GetAttrString(user_data, "cb_get_frame");
     if (!py_get || !PyCallable_Check(py_get))
         py_get = NULL;
+
     py_put = PyObject_GetAttrString(user_data, "cb_put_frame");
     if (!py_put || !PyCallable_Check(py_put))
         py_put = NULL;

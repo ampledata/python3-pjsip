@@ -29,11 +29,13 @@ def log_cb(level, str, len):
     print(str),
 
 
-class AudioCB:
+class AudioCB(object):
+
     frames = deque()
 
     def cb_put_frame(self, frame):
         # An audio frame arrived, it is a string (i.e. ByteArray)
+        #print('cb_put_frame frame="{}"'.format(frame))
         self.frames.append(frame)
         # Return an integer; 0 means success, but this does not matter now
         return 0
@@ -43,6 +45,7 @@ class AudioCB:
         if len(self.frames):
             frame = self.frames.popleft()
             # Send the frame out
+            print('cb_get_frame frame="{}"'.format(frame))
             return frame
         else:
             # Do not emit an audio frame
@@ -102,7 +105,7 @@ try:
 
     # Create UDP transport which listens to any available port
     transport = lib.create_transport(pj.TransportType.UDP,
-                                     pj.TransportConfig(0))
+                                     pj.TransportConfig(15060))
     print( "\nListening on", transport.info().host,)
     print( "port", transport.info().port, "\n")
 
